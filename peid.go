@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 	// [ホームディレクトリを取得するのにos/userを使うとエラーになる場合がある - Qiita](http://qiita.com/hironobu_s/items/da2f97c2154075d3fbbe)
-	"github.com/mitchellh/go-homedir"
+	// "github.com/mitchellh/go-homedir"
 	"strings"
 )
 
@@ -104,17 +104,14 @@ func Examine(file string) {
 		return
 	}
 
-	hdir, err := homedir.Dir()
-	if err != nil {
-		logrus.Warn("cannot get HOME value")
-		return
-	}
 	// other ways: http://tkuchiki.hatenablog.com/entry/2014/11/10/123447
 	var cmd *exec.Cmd
+    RULES_FILE := Config.YaraRulesPath
+    fmt.Println("RULES_FILE = " + RULES_FILE)
 	if fl, _ := os.Stat(file); fl.IsDir() {
-		cmd = exec.Command("yara", "-w", "-r", hdir+"/malware/rules/index.yar", file)
+		cmd = exec.Command("yara", "-w", "-r", RULES_FILE, file)
 	} else {
-		cmd = exec.Command("yara", "-w", hdir+"/malware/rules/index.yar", file)
+		cmd = exec.Command("yara", "-w", RULES_FILE, file)
 	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -130,11 +127,14 @@ func Examine(file string) {
 func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetOutput(colorable.NewColorableStdout())
+
 	if !check_requirements() {
 		return
 	} else {
 		logrus.Info("all rewuirements met")
 	}
+    Configure()
+
 	if len(os.Args) != 2 {
 		usage()
 	}
