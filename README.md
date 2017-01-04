@@ -5,7 +5,7 @@ Yet another implementation of PEiD with yara
 
 Features
 ----
-* analyses outputs of yara (see following output)
+* analyze outputs of yara (see following output)
 
 ```
 /home/katc/malware/test/PlugX/C116CD083284CC599C024C3479CA9B70_2.tmp_ =>
@@ -25,5 +25,5 @@ TODO
 - [ ] Fix GOOS env variable in some way
 - [ ] Packer support
 - [ ] More support for yara rules
-- [ ] Add automatic yara rules location finder (implement automatic configurator)
+- [ ] Add automatic yara rules location finder for Windows/Mac (implement automatic configurator)
 - [ ] Colorize analysis result

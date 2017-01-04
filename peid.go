@@ -26,7 +26,7 @@ func check_requirements() bool {
 	for _, v := range need {
 		res := check_if_command_exists(v, "-v")
 		if res == false {
-			msg := fmt.Sprintf("command '%s' not exists. check your PATH", v)
+			msg := fmt.Sprintf("command '%s' not exists", v)
 			logrus.Warn(msg)
 			all_met = false
 		}
