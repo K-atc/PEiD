@@ -5,19 +5,22 @@ Yet another implementation of PEiD with yara
 
 Features
 ----
+* support multiple file types: PE, Malicious Documents, 
 * analyze outputs of yara (see following output)
 
 ```
-/home/katc/malware/test/PlugX/C116CD083284CC599C024C3479CA9B70_2.tmp_ =>
-["Microsoft_Visual_Cpp_v50v60_MFC" "Microsoft_Visual_Cpp_v60_DLL" "IsPE32" "IsDLL" "IsWindowsGUI" "IsPacked" "HasOverlay" "HasDigitalSignature" "HasRichSignature" "contentis_base64" "anti_dbg" "win_mutex" "win_files_operation" "with_urls" "without_images" "without_attachments"]
+% ./PEiD cmd/anti_dbg_msgbox/anti_dbg_msgbox.exe
+INFO[0000] all rewuirements met                         
+RULES_FILE = /home/katc/malware/rules/index.yar
+cmd/anti_dbg_msgbox/anti_dbg_msgbox.exe =>
+["possible_includes_base64_packed_functions" "IsPE32" "IsConsole" "contentis_base64" "DebuggerException__SetConsoleCtrl" "SEH__vectored" "anti_dbg" "network_udp_sock" "network_tcp_listen" "network_tcp_socket" "network_dns" "win_registry" "win_token" "win_files_operation" "Str_Win32_Winsock2_Library" "without_urls" "without_images" "without_attachments"]
   PE : 32 bit
-  DLL : yes
+  DLL : no
   Anti-Debug : yes
-  Packed : yes
+  Packed : no
   GUI Program : yes
-  mutex : yes
   contains base64
-  contains urls
+
 ```
 
 TODO

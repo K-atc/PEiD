@@ -50,11 +50,11 @@ func add_comment(record YaraRecord) (string, bool) {
 
 	var is_packed bool
 	if is_PE {
-        if find_string(sorted_matched_rules, "IsDLL") {
-            comment += make_comment_line("DLL", "yes")
-        } else {
-            comment += make_comment_line("DLL", "no")
-        }        
+		if find_string(sorted_matched_rules, "IsDLL") {
+			comment += make_comment_line("DLL", "yes")
+		} else {
+			comment += make_comment_line("DLL", "no")
+		}
 		if find_string(sorted_matched_rules, "anti_dbg") {
 			comment += make_comment_line("Anti-Debug", "yes")
 		} else {
@@ -67,7 +67,7 @@ func add_comment(record YaraRecord) (string, bool) {
 			comment += make_comment_line("Packed", "no")
 			is_packed = false
 		}
-		if find_string(sorted_matched_rules, "contentis_base64") {
+		if find_string(sorted_matched_rules, "IsWindowsGUI") {
 			comment += make_comment_line("GUI Program", "yes")
 		} else {
 			if is_packed {
@@ -76,10 +76,19 @@ func add_comment(record YaraRecord) (string, bool) {
 				comment += make_comment_line("GUI Program", "no")
 			}
 		}
-        if find_string(sorted_matched_rules, "win_mutex") {
-            comment += make_comment_line("mutex", "yes")
-        }
-    }
+		if find_string(sorted_matched_rules, "IsConsole") {
+			comment += make_comment_line("Console Program", "yes")
+		} else {
+			if is_packed {
+				comment += make_comment_line("Console Program", "no (yes)")
+			} else {
+				comment += make_comment_line("Console Program", "no")
+			}
+		}
+		if find_string(sorted_matched_rules, "win_mutex") {
+			comment += make_comment_line("mutex", "yes")
+		}
+	}
 
 	if find_string(sorted_matched_rules, "contentis_base64") {
 		comment += make_comment_line("contains base64", "")

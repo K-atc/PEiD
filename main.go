@@ -6,27 +6,22 @@ import (
 	"github.com/mattn/go-colorable"
 	"os"
 	"os/exec"
-	// [ホームディレクトリを取得するのにos/userを使うとエラーになる場合がある - Qiita](http://qiita.com/hironobu_s/items/da2f97c2154075d3fbbe)
-	// "github.com/mitchellh/go-homedir"
+	"runtime"
 	"strings"
 )
 
-func check_if_command_exists(cmd_name string, opt_version string) bool {
-	cmd := exec.Command(cmd_name, opt_version)
-	err := cmd.Start()
-	if err != nil {
-		return false
-	}
-	return true
-}
-
 func check_requirements() bool {
 	var all_met = true
-	need := []string{"git", "yara"} // required commands
+	var need []string // required commands
+	if runtime.GOOS == "linux" {
+		need = []string{Config.YaraBinName, "find"}
+	} else if runtime.GOOS == "windows" {
+		need = []string{Config.YaraBinName}
+	}
 	for _, v := range need {
 		res := check_if_command_exists(v, "-v")
 		if res == false {
-			msg := fmt.Sprintf("command '%s' not exists", v)
+			msg := fmt.Sprintf("command '%s' not found", v)
 			logrus.Warn(msg)
 			all_met = false
 		}
@@ -59,7 +54,7 @@ func parse_line(line string) (string, string, bool) {
 	if len(res) != 2 {
 		return "", "", false
 	}
-	return res[0], res[1], true
+	return res[0], strings.Trim(res[1], "\r"), true
 }
 
 func do_exam(out string) []YaraRecord {
@@ -85,9 +80,9 @@ func do_exam(out string) []YaraRecord {
 	for _, v := range result {
 		var msg string
 		if comment, ok := add_comment(v); ok {
-			msg = fmt.Sprintf("%s =>\n%q\n%s", v.file_name, v.matched_rules, comment)
+			msg = fmt.Sprintf("%s =>%s%q%s%s", v.file_name, Config.LineBreak, v.matched_rules, Config.LineBreak, comment)
 		} else {
-			msg = fmt.Sprintf("%s =>\n%q\n", v.file_name, v.matched_rules)
+			msg = fmt.Sprintf("%s =>%s%q%s", v.file_name, Config.LineBreak, v.matched_rules, Config.LineBreak)
 		}
 		fmt.Println(msg)
 	}
@@ -106,12 +101,12 @@ func Examine(file string) {
 
 	// other ways: http://tkuchiki.hatenablog.com/entry/2014/11/10/123447
 	var cmd *exec.Cmd
-    RULES_FILE := Config.YaraRulesPath
-    fmt.Println("RULES_FILE = " + RULES_FILE)
+	RULES_FILE := Config.YaraRulesPath
+	fmt.Println("RULES_FILE = " + RULES_FILE)
 	if fl, _ := os.Stat(file); fl.IsDir() {
-		cmd = exec.Command("yara", "-w", "-r", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-r", RULES_FILE, file)
 	} else {
-		cmd = exec.Command("yara", "-w", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinName, "-w", "-f", RULES_FILE, file)
 	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -125,19 +120,23 @@ func Examine(file string) {
 }
 
 func main() {
+	if len(os.Args) != 2 {
+		usage()
+		os.Exit(1)
+	}
+	file := os.Args[1]
+	Examine(file)
+}
+
+func init() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetOutput(colorable.NewColorableStdout())
+
+	Configure()
 
 	if !check_requirements() {
 		return
 	} else {
-		logrus.Info("all rewuirements met")
+		logrus.Info("all requirements met")
 	}
-    Configure()
-
-	if len(os.Args) != 2 {
-		usage()
-	}
-	file := os.Args[1]
-	Examine(file)
 }
