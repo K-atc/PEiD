@@ -12,7 +12,7 @@ var Config struct {
 	YaraRulesPath string
 	YaraRuleIndex string
 	YaraBinName   string
-	LineBreak string
+	LineBreak     string
 }
 
 func set_home_dir() error {
@@ -50,5 +50,5 @@ func Configure() {
 	err = set_line_break()
 	if err != nil {
 		logrus.Fatal(err)
-	}	
+	}
 }

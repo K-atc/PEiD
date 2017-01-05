@@ -12,7 +12,7 @@ PEiD.exe: *.go
 
 # FIXME: build always
 anti_dbg_msgbox.exe: cmd/anti_dbg_msgbox/*.go
-	cd cmd/anti_dbg_msgbox && GOOS=windows GOARCH=386 go build 
+	cd cmd/anti_dbg_msgbox && GOOS=windows GOARCH=386 go build && rm -f anti_dbg_msgbox-upx.exe && upx -o anti_dbg_msgbox-upx.exe anti_dbg_msgbox.exe
 
 init:
 	go get github.com/Sirupsen/logrus

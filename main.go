@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/mattn/go-colorable"
@@ -9,6 +10,10 @@ import (
 	"runtime"
 	"strings"
 )
+
+var opt struct {
+	verbose bool
+}
 
 func check_requirements() bool {
 	var all_met = true
@@ -30,7 +35,10 @@ func check_requirements() bool {
 }
 
 func usage() {
-	fmt.Println("usage: %s FILE", os.Args[0])
+	msg := fmt.Sprintf("usage: %s [OPTIONS] FILE", os.Args[0])
+	fmt.Println(msg)
+	flag.PrintDefaults()
+	os.Exit(1)
 }
 
 func exists(path string) (bool, error) {
@@ -46,43 +54,51 @@ func exists(path string) (bool, error) {
 
 type YaraRecord struct {
 	file_name     string
+	matched_tags  []string
 	matched_rules []string
 }
 
-func parse_line(line string) (string, string, bool) {
-	res := strings.SplitN(line, " ", 2)
-	if len(res) != 2 {
-		return "", "", false
+func parse_line(line string) (rule_name, tag_name, file_name string, parse_status bool) {
+	res := strings.SplitN(line, " ", 3)
+	if len(res) != 3 {
+		return "", "", "", false
 	}
-	return res[0], strings.Trim(res[1], "\r"), true
+	rule_name = res[0]
+	tag_name = strings.Trim(res[1], "[]")
+	file_name = strings.Trim(res[2], "\r")
+	return rule_name, tag_name, file_name, true
 }
 
 func do_exam(out string) []YaraRecord {
 	var result []YaraRecord
 	var matched_rules []string
+	var matched_tags []string
 	var file_name string
 	prev_file_name := ""
 	for _, line := range strings.Split(out, "\n") {
-		if rule_name, file_name, ok := parse_line(line); ok {
+		if rule_name, tag_name, file_name, ok := parse_line(line); ok {
 			if prev_file_name == file_name {
 				matched_rules = append(matched_rules, rule_name)
+				matched_tags = append(matched_tags, tag_name)
 			} else {
 				if prev_file_name != "" {
-					result = append(result, YaraRecord{file_name: file_name, matched_rules: matched_rules})
+					result = append(result, YaraRecord{file_name: file_name, matched_tags: matched_tags, matched_rules: matched_rules})
 				}
 				matched_rules = append(make([]string, 0), rule_name)
+				matched_tags = append(make([]string, 0), tag_name)
 				prev_file_name = file_name
 			}
 		}
 	}
 	file_name = prev_file_name // restore
-	result = append(result, YaraRecord{file_name: file_name, matched_rules: matched_rules})
+	result = append(result, YaraRecord{file_name: file_name, matched_tags: matched_tags, matched_rules: matched_rules})
 	for _, v := range result {
-		var msg string
+		msg := fmt.Sprintf("%s =>%s", v.file_name, Config.LineBreak)
+		if opt.verbose {
+			msg += fmt.Sprintf("%q%s%q%s", v.matched_rules, Config.LineBreak, v.matched_tags, Config.LineBreak)
+		}
 		if comment, ok := add_comment(v); ok {
-			msg = fmt.Sprintf("%s =>%s%q%s%s", v.file_name, Config.LineBreak, v.matched_rules, Config.LineBreak, comment)
-		} else {
-			msg = fmt.Sprintf("%s =>%s%q%s", v.file_name, Config.LineBreak, v.matched_rules, Config.LineBreak)
+			msg += fmt.Sprintf("%s", comment)
 		}
 		fmt.Println(msg)
 	}
@@ -104,9 +120,9 @@ func Examine(file string) {
 	RULES_FILE := Config.YaraRulesPath
 	fmt.Println("RULES_FILE = " + RULES_FILE)
 	if fl, _ := os.Stat(file); fl.IsDir() {
-		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-r", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-g", "-p", "2", "-r", RULES_FILE, file)
 	} else {
-		cmd = exec.Command(Config.YaraBinName, "-w", "-f", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-g", RULES_FILE, file)
 	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -120,11 +136,17 @@ func Examine(file string) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
+	flag.BoolVar(&opt.verbose, "verbose", false, "verbose output")
+	flag.BoolVar(&opt.verbose, "v", false, "verbose output")
+	flag.Usage = func() {
 		usage()
-		os.Exit(1)
 	}
-	file := os.Args[1]
+	flag.Parse()
+
+	if len(flag.Args()) != 1 {
+		usage()
+	}
+	file := flag.Args()[0]
 	Examine(file)
 }
 

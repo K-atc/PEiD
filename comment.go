@@ -1,10 +1,10 @@
 package main
 
 import (
-	// "fmt"
 	"sort"
-	// "strings"
 	// "github.com/fatih/color"
+	"fmt"
+	"strings"
 )
 
 func find_string(haystack []string, needle string) bool {
@@ -24,10 +24,20 @@ func make_comment_line(title, data string) string {
 	//     data = color.Red(data)
 	// }
 	if len(data) == 0 {
-		return "  " + title + "\n"
+		return "  " + title + Config.LineBreak
 	} else {
-		return "  " + title + " : " + data + "\n"
+		return "  " + title + " : " + data + Config.LineBreak
 	}
+}
+
+func arrange_tags(tag_name string, tags, rules []string) (arranged []string) {
+	_len := len(rules)
+	for i := 0; i < _len; i += 1 {
+		if strings.Contains(tags[i], tag_name) {
+			arranged = append(arranged, rules[i])
+		}
+	}
+	return arranged
 }
 
 func add_comment(record YaraRecord) (string, bool) {
@@ -55,17 +65,21 @@ func add_comment(record YaraRecord) (string, bool) {
 		} else {
 			comment += make_comment_line("DLL", "no")
 		}
-		if find_string(sorted_matched_rules, "anti_dbg") {
-			comment += make_comment_line("Anti-Debug", "yes")
-		} else {
-			comment += make_comment_line("Anti-Debug", "no")
-		}
 		if find_string(sorted_matched_rules, "IsPacked") {
 			comment += make_comment_line("Packed", "yes")
 			is_packed = true
 		} else {
 			comment += make_comment_line("Packed", "no")
 			is_packed = false
+		}
+		if find_string(sorted_matched_rules, "anti_dbg") {
+			comment += make_comment_line("Anti-Debug", "yes")
+		} else {
+			if is_packed {
+			comment += make_comment_line("Anti-Debug", "no (yes)")
+				} else {
+			comment += make_comment_line("Anti-Debug", "no")
+				}
 		}
 		if find_string(sorted_matched_rules, "IsWindowsGUI") {
 			comment += make_comment_line("GUI Program", "yes")
@@ -93,8 +107,15 @@ func add_comment(record YaraRecord) (string, bool) {
 	if find_string(sorted_matched_rules, "contentis_base64") {
 		comment += make_comment_line("contains base64", "")
 	}
-	if find_string(sorted_matched_rules, "with_urls") {
-		comment += make_comment_line("contains urls", "")
+	// if find_string(sorted_matched_rules, "with_urls") {
+	// 	comment += make_comment_line("contains urls", "")
+	// }
+
+	for _, v := range []string{"PEiD", "AntiDebug"} {
+		arranged := arrange_tags(v, record.matched_tags, record.matched_rules)
+		if len(arranged) > 0 {
+			comment += make_comment_line(v, fmt.Sprintf("%q", arranged))
+		}
 	}
 
 	if len(comment) > 0 {
