@@ -51,17 +51,3 @@ func Find(file string) (found_path string, err error) {
 		return "", errors.New(msg)
 	}
 }
-
-// func Where(bin_name string) (path string, err error) {
-// 	if len(bin_name) == 0 {
-// 		return "", errors.New("in Where(): arg is not given")
-// 	}
-// 	out, err := exec.Command("sh", "-c", "where", bin_name).CombinedOutput()
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return string(out), nil
-// 	found_path := strings.Split(string(out), "\n")[0]
-// 	strings.Trim(found_path, " \t\r\n")
-// 	return found_path, nil
-// }

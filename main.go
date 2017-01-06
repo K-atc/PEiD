@@ -14,7 +14,12 @@ import (
 var opt struct {
 	verbose bool
 	prepare bool
+	version bool
 }
+
+var (
+	version string
+)
 
 func check_requirements() bool {
 	var all_met = true
@@ -131,9 +136,15 @@ func Examine(file string) {
 		fmt.Println(string(out))
 		return
 	}
-	// fmt.Println(string(out))
 	do_exam(string(out))
-	// show_result(result)
+}
+
+func show_version() {
+	var msg string
+	msg = fmt.Sprintf("PEiD - Yet another implementation of PEiD with yara")
+	fmt.Println(msg)
+	msg = fmt.Sprintf("  version: %s", version)
+	fmt.Println(msg)
 }
 
 func main() {
@@ -143,6 +154,8 @@ func main() {
 			logrus.Fatal(err)
 		}
 		logrus.Info("prepare successfuly")
+	} else if opt.version {
+		show_version()
 	} else {
 		Configure()
 
@@ -164,6 +177,7 @@ func init() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetOutput(colorable.NewColorableStdout())
 
+	flag.BoolVar(&opt.version, "version", false, "version info")
 	flag.BoolVar(&opt.prepare, "prepare", false, "prepare files to meet requirements")
 	flag.BoolVar(&opt.verbose, "verbose", false, "verbose output")
 	flag.BoolVar(&opt.verbose, "v", false, "verbose output")

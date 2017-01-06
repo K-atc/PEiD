@@ -1,4 +1,5 @@
 BINS = PEiD PEiD.exe anti_dbg_msgbox.exe
+GIT_VER = $(shell git describe --tags)
 
 all: PEiD PEiD.exe anti_dbg_msgbox.exe
 	go fmt
@@ -6,11 +7,11 @@ all: PEiD PEiD.exe anti_dbg_msgbox.exe
 PEiD: *.go
 	# export GOPATH=`pwd`
 	go generate
-	GOOS=linux go build
+	GOOS=linux go build -ldflags "-X main.version=$(GIT_VER)"
 
 PEiD.exe: *.go
 	go generate
-	GOOS=windows go build
+	GOOS=windows go build -ldflags "-X main.version=$(GIT_VER)"
 	cp $@ "/home/katc/VirtualBox VMs/share/$@"
 
 # FIXME: build always

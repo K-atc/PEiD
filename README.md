@@ -5,33 +5,63 @@ Yet another implementation of PEiD with yara
 
 Features
 ----
-* support multiple file types: PE, Malicious Documents, 
+* __don't need to install yara and download yara rules__
+* support multiple file types: PE, Malicious Documents, etc
 * multi platform support: Linux, Windows
 * analyze outputs of yara (see following output)
 
+Usage
+----
 ```
-% ./PEiD cmd/anti_dbg_msgbox/anti_dbg_msgbox.exe
+% ./PEiD --prepare # if yara and yara rules does not exists 
+INFO[0000] prepare successfuly                          
+% ./PEiD cmd/anti_dbg_msgbox/anti_dbg_msgbox-upx.exe
+INFO[0000] yara = '/home/katc/bin/PEiD/yara'            
 INFO[0000] all requirements met                         
 RULES_FILE = /home/katc/malware/rules/index.yar
-cmd/anti_dbg_msgbox/anti_dbg_msgbox.exe =>
-["possible_includes_base64_packed_functions" "IsPE32" "IsConsole" "contentis_base64" "DebuggerException__SetConsoleCtrl" "SEH__vectored" "anti_dbg" "network_udp_sock" "network_tcp_listen" "network_tcp_socket" "network_dns" "win_registry" "win_token" "win_files_operation" "Str_Win32_Winsock2_Library" "without_urls" "without_images" "without_attachments"]
+cmd/anti_dbg_msgbox/anti_dbg_msgbox-upx.exe =>
   PE : 32 bit
   DLL : no
-  Anti-Debug : yes
-  Packed : no
-  GUI Program : yes
+  Packed : yes
+  Anti-Debug : no (yes)
+  GUI Program : no (yes)
+  Console Program : yes
   contains base64
+  PEiD : ["UPX_wwwupxsourceforgenet_additional" "yodas_Protector_v1033_dllocx_Ashkbiz_Danehkar_h" "UPX_290_LZMA" "UPX_290_LZMA_Markus_Oberhumer_Laszlo_Molnar_John_Reiser" "UPX_290_LZMA_additional" "UPX_wwwupxsourceforgenet"]
 ```
 
 
 Requirement
 ----
-* yara
-* yara rules: https://github.com/Yara-Rules/rules/
+### run
+there's no requirements!
+
+### build
+install
+
+* git
+* make
+* go
+* go-bindata
 
 
 Build
 ----
+
+(optional) Download latest following releases to `/data`
+
+* yara
+* yara rules: https://github.com/Yara-Rules/rules/
+
+Run following command to `go get` packages
+
+```bash
+export GOPATH=`pwd`
+make init
+```
+
+Finally, 
+
 ```bash
 make
 ```
@@ -40,8 +70,5 @@ make
 TODO
 ----
 - [ ] version info
-- [ ] Fix GOOS env variable in some way
-- [ ] automatic configuration for yara (for perfect portability)
 - [ ] Colorize analysis result
 - [ ] Support Mac
-- [ ] make this single-binary witch contains yara (for Linux/Winows) & yara rules

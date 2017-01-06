@@ -44,13 +44,3 @@ func Find(file string) (found_path string, err error) {
 		return "", errors.New(msg)
 	}
 }
-
-// func Where(bin_name string) (path string, err error) {
-// 	out, err := exec.Command("cmd", "/C", "where", bin_name).Output()
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	found_path := strings.Split(string(out), "\n")[0]
-// 	strings.Trim(found_path, " \t\r\n")
-// 	return found_path, nil
-// }
