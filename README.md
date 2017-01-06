@@ -3,6 +3,12 @@ PEiD (alpha version)
 
 Yet another implementation of PEiD with yara 
 
+Download
+----
+You can get pre-build binary here:
+https://github.com/K-atc/PEiD/releases
+
+
 Features
 ----
 * __don't need to install yara and download yara rules__
@@ -69,6 +75,5 @@ make
 
 TODO
 ----
-- [ ] version info
 - [ ] Colorize analysis result
 - [ ] Support Mac
