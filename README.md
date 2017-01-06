@@ -39,6 +39,9 @@ make
 
 TODO
 ----
+- [ ] version info
 - [ ] Fix GOOS env variable in some way
+- [ ] automatic configuration for yara (for perfect portability)
 - [ ] Colorize analysis result
 - [ ] Support Mac
+- [ ] make this single-binary witch contains yara (for Linux/Winows) & yara rules

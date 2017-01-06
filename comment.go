@@ -76,10 +76,10 @@ func add_comment(record YaraRecord) (string, bool) {
 			comment += make_comment_line("Anti-Debug", "yes")
 		} else {
 			if is_packed {
-			comment += make_comment_line("Anti-Debug", "no (yes)")
-				} else {
-			comment += make_comment_line("Anti-Debug", "no")
-				}
+				comment += make_comment_line("Anti-Debug", "no (yes)")
+			} else {
+				comment += make_comment_line("Anti-Debug", "no")
+			}
 		}
 		if find_string(sorted_matched_rules, "IsWindowsGUI") {
 			comment += make_comment_line("GUI Program", "yes")

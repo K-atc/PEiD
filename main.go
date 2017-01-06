@@ -13,15 +13,16 @@ import (
 
 var opt struct {
 	verbose bool
+	prepare bool
 }
 
 func check_requirements() bool {
 	var all_met = true
 	var need []string // required commands
 	if runtime.GOOS == "linux" {
-		need = []string{Config.YaraBinName, "find"}
+		need = []string{"find"}
 	} else if runtime.GOOS == "windows" {
-		need = []string{Config.YaraBinName}
+		need = []string{"cmd"}
 	}
 	for _, v := range need {
 		res := check_if_command_exists(v, "-v")
@@ -120,9 +121,9 @@ func Examine(file string) {
 	RULES_FILE := Config.YaraRulesPath
 	fmt.Println("RULES_FILE = " + RULES_FILE)
 	if fl, _ := os.Stat(file); fl.IsDir() {
-		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-g", "-p", "2", "-r", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinPath, "-w", "-f", "-g", "-p", "2", "-r", RULES_FILE, file)
 	} else {
-		cmd = exec.Command(Config.YaraBinName, "-w", "-f", "-g", RULES_FILE, file)
+		cmd = exec.Command(Config.YaraBinPath, "-w", "-f", "-g", RULES_FILE, file)
 	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -136,29 +137,38 @@ func Examine(file string) {
 }
 
 func main() {
-	flag.BoolVar(&opt.verbose, "verbose", false, "verbose output")
-	flag.BoolVar(&opt.verbose, "v", false, "verbose output")
-	flag.Usage = func() {
-		usage()
-	}
-	flag.Parse()
+	if opt.prepare {
+		err := prepare()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		logrus.Info("prepare successfuly")
+	} else {
+		Configure()
 
-	if len(flag.Args()) != 1 {
-		usage()
+		if !check_requirements() {
+			return
+		} else {
+			logrus.Info("all requirements met")
+		}
+		if len(flag.Args()) != 1 {
+			usage()
+		} else {
+			file := flag.Args()[0]
+			Examine(file)
+		}
 	}
-	file := flag.Args()[0]
-	Examine(file)
 }
 
 func init() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetOutput(colorable.NewColorableStdout())
 
-	Configure()
-
-	if !check_requirements() {
-		return
-	} else {
-		logrus.Info("all requirements met")
+	flag.BoolVar(&opt.prepare, "prepare", false, "prepare files to meet requirements")
+	flag.BoolVar(&opt.verbose, "verbose", false, "verbose output")
+	flag.BoolVar(&opt.verbose, "v", false, "verbose output")
+	flag.Usage = func() {
+		usage()
 	}
+	flag.Parse()
 }
