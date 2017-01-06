@@ -42,7 +42,10 @@ func set_yara_bin_path() error {
 }
 
 func set_yara_rules_path() error {
-	found_path, _ := Find(Config.YaraRuleIndex)
+	found_path, err := Find(Config.YaraRuleIndex)
+	if err != nil {
+		return err
+	}
 	if len(found_path) > 0 {
 		Config.YaraRulesPath = found_path
 	} else {

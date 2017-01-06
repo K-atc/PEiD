@@ -24,15 +24,14 @@ func Find(file string) (found_path string, err error) {
 	_, file_name := filepath.Split(file)
 	for _, drive := range []string{"C:", "E:"} {
 		err = os.Chdir(drive)
-		if err != nil {
-			return "", err
-		}
+		if err == nil {
+			out, _ = exec.Command("cmd", "/C", "dir", file_name, "/b/s").Output()
 
-		out, _ = exec.Command("cmd", "/C", "dir", file_name, "/b/s").Output()
-
-		for _, v := range strings.Split(string(out), "\n") {
-			if strings.Contains(v, Config.YaraRuleIndex) {
-				found_path = v
+			for _, v := range strings.Split(string(out), "\n") {
+				if strings.Contains(v, Config.YaraRuleIndex) {
+					found_path = v
+					break
+				}
 			}
 		}
 	}
